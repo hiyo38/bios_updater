@@ -26,9 +26,9 @@ def test():
     tablerows = tablehead.find_all('tr')
     for tr in tablerows:
         td = tr.find_all("td", {"align" : "left"})
-        for mobo in td:
-            print(mobo.string)
-    return
+        a = td.find_all("a")
+        if td:
+            print(a[0].string)
 
 def softwareIDList():
     # List for storing software IDs
@@ -58,9 +58,14 @@ def moboModelsList():
     models = table[0]['Model'].tolist()
     return models
 
+    # This function downloads all 416 bios firmware files from the website and attempts to place them in a properly named folders.
+    # In the future this function would ideally be given just the software ID after the server MOBO model has been obtained then matched with 
+    # a model in the MOBO DB which would return the software ID and call this function and the naming of the folders wouldnt matter.
+    # For now it is handed a list of models and softwareIDs which should be parallel lists as the model list is used purely for naming the folders they go in. The current method 
+    # of obtaining the models isnt ideal but I cant seem to find a better way at the moment. The current way of parsing the Models only works for about 80% of them.
+    # There are certain edge cases where it just doesnt work but in reality we only need about a dozen motherboards and they arent effected. 
 def downloadFirmware(model,softwareID): 
     #Create the path for the dir
-    
     path  = os.getcwd() + "/BIOS"
     
     try:
@@ -74,13 +79,14 @@ def downloadFirmware(model,softwareID):
         os.system('clear')
         print("Downloading Firware ["+ str(i+1) +"/"+ str(len(softwareID))+"]")
         start = model[i][0] 
-        
-        models = model[i].split(start)
-        print(models)
-        r = requests.get("https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID="+ID, stream=True)
-        z = zipfile.ZipFile(io.BytesIO(r.content))
-        for names in models:
-            z.extractall(path+"/"+start+names)
+        if(start != 'A'or start != 'C'):
+            models = model[i].split(start)
+            del(models[0])
+            print(models)
+            r = requests.get("https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID="+ID, stream=True)
+            z = zipfile.ZipFile(io.BytesIO(r.content))
+            for names in models:
+                z.extractall(path+"/"+start+names)
         
         
 
