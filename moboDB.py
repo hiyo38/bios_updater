@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import mobo_drivers
-import dataset
 import shelve
 
 

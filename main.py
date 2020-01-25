@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 import mobo_drivers
 import moboDB
-# import moboDB
 
 if __name__ == "__main__":
     name = "X9SCL-F"
