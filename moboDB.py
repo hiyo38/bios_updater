@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import mobo_drivers
 import dataset
 db = dataset.connect('sqlite:///Firmware.db')
@@ -18,11 +19,10 @@ def getDB():
 def addMOBOS(motherboardList):
     table = db.get_table('MOBOS')
     for dataset in motherboardList:
+        ID = dataset[len(dataset)-1]
         for item in dataset:
             if isinstance(item,str):
-                ID = dataset[len(dataset)-1]
-                table.insert(dict(model=item, SoftwareID=ID))
-
+               table.insert(dict(model=item,software=ID))
     return
 
 # Method that returns data to you based on what you put in. For example if give a motherboard string it will return any software ID associated with it in the database.
@@ -33,7 +33,7 @@ def getMOBO(model,*args):
     except:
         print("Table not found try creating database first")
     
-    result = (table.find_one(model=model)['SoftwareID'])
+    result = (table.find_one(model=model)['software'])
     # for arg in args:
     #     if isinstance(arg,str):
     #         result.append(table.find(model=arg)['SoftwareID'])
@@ -45,7 +45,8 @@ def getMOBO(model,*args):
 
 
 if __name__ == "__main__":
-    getMOBO("X9SCA")
+    
+    getMOBO("X11SSL-F")
     getDB()
     
     

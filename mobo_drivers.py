@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import io
 import re
 import shutil
