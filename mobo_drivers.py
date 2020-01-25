@@ -1,93 +1,87 @@
-from lxml import html
-import requests, zipfile, io, bs4
-import pandas as pd
-import urllib
-import os
+import io
 import re
-import subprocess
 import shutil
-#bashCommand = "dmidecode -r 1 | grep Product\ Name:"
-#moboModel = subprocess.check_output([bashCommand])
+import zipfile
+import os
+import requests
 
-#for line in moboModel:
-#	print(line)
+import bs4
 
-# Main URL I will be working from
-url = r'https://www.supermicro.com/support/resources/bios_ipmi.php?type=BIOS'
-#Open a connection
-connection = urllib.request.urlopen(url)
+from config import get_config
 
 
-def test():
-    res = requests.get(url)
-    res.raise_for_status()
-    bios = bs4.BeautifulSoup(res.text,'lxml')
-    tablehead = bios.find('table')
-    tablerows = tablehead.find_all('tr')
-    for tr in tablerows:
-        td = tr.find_all("td", {"align" : "left"})
-        a = td.find_all("a")
-        if td:
-            print(a[0].string)
-
-def softwareIDList():
-    # List for storing software IDs
-    SoftwareItemID = []
-    temp = []
-    #Read the HTML from the URL
-    dom = html.fromstring(connection.read())
-
-    #Grab all the links on the page
-    for link in dom.xpath('//a/@href'):
-        #Regex string to caputre all software IDs at the end of links
-        result = re.match(r"/about/policies/disclaimer.cfm\?SoftwareItemID=(\d*)",link)
-
-        if(result):
-            temp.append(result.group(1))
-            #print(result.group(1))
-
-    for ID in temp:
-        if ID not in SoftwareItemID:
-            SoftwareItemID.append(ID)
-            #print(ID)
-    return SoftwareItemID       
-
-def moboModelsList():
-    table = pd.read_html(url)
-    #print(table[0]['Model'])
-    models = table[0]['Model'].tolist()
+def get_motherboard_list() -> list:
+    """
+    This does everything now. Returns a list of lists formatted like this
+    [['moboName1','moboName2','softwareID'],['moboName1','moboName2','softwareID']...,] .
+    All the motherboards in a list have the same softwareID in common making it easy for them to group together.
+    @return: list
+    """
+    # request page
+    tries = 0
+    while tries < get_config("SETTINGS", "MAX_RETRIES"):
+        res = requests.get(get_config("SETTINGS", "BIOS_URL"))
+        if res.status_code != 200:
+            tries += 1
+            continue
+        break
+    # parse page
+    bios = bs4.BeautifulSoup(res.text, 'lxml')
+    table_head = bios.find('table')
+    tr = table_head.find_all('tr')
+    models = []
+    for text in tr:
+        model_info = []
+        links = text.find_all('a')
+        for mobo in links:
+            result = re.match(r"/about/policies/disclaimer.cfm\?SoftwareItemID=(\d*)", mobo.get('href'))
+            if result:
+                model_info.append(int(result.group(1)))
+            for name in mobo:
+                if validate(name):
+                    model_info.append(name)
+        if model_info:
+            models.append(model_info)
     return models
 
-    # This function downloads all 416 bios firmware files from the website and attempts to place them in a properly named folders.
-    # In the future this function would ideally be given just the software ID after the server MOBO model has been obtained then matched with 
-    # a model in the MOBO DB which would return the software ID and call this function and the naming of the folders wouldnt matter.
-    # For now it is handed a list of models and softwareIDs which should be parallel lists as the model list is used purely for naming the folders they go in. The current method 
-    # of obtaining the models isnt ideal but I cant seem to find a better way at the moment. The current way of parsing the Models only works for about 80% of them.
-    # There are certain edge cases where it just doesnt work but in reality we only need about a dozen motherboards and they arent effected. 
-def downloadFirmware(model,softwareID): 
-    #Create the path for the dir
-    path  = os.getcwd() + "/BIOS"
-    
+
+def validate(item: str) -> bool:
+    """
+    @param item:
+    @return:
+    """
+    for exclusion in get_config("SETTINGS", "EXCLUDED_FILES"):
+        if exclusion in item.lower():
+            return False
+    return True
+
+
+# Pass in two args. The model arg is the name of the folder that the BIOS will be placed in
+# The softwareID is appended to a http request that get the firmware from the supermicro database
+def download_firmware(model, software_id) -> None:
+    """
+    Downloads model firmware to target directory
+    @param model:
+    @param software_id:
+    @return:
+    """
+    # Create the path for the dir
+    path = os.getcwd() + "/BIOS"
     try:
         shutil.rmtree("BIOS")
+        print("Deleting old BIOS folder")
+    except OSError:
+        print("No old BIOS folder Found")
+    try:
         os.mkdir(path)
-        print("Creating BIOs dir")
+        print("Creating BIOS dir")
     except OSError:
         print("Failed to create BIOS folder")
-
-    for i,ID in enumerate(softwareID):
-        os.system('clear')
-        print("Downloading Firware ["+ str(i+1) +"/"+ str(len(softwareID))+"]")
-        start = model[i][0] 
-        if(start != 'A'or start != 'C'):
-            models = model[i].split(start)
-            del(models[0])
-            print(models)
-            r = requests.get("https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID="+ID, stream=True)
-            z = zipfile.ZipFile(io.BytesIO(r.content))
-            for names in models:
-                z.extractall(path+"/"+start+names)
-        
-        
-
+    
+    r = requests.get("https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID={}".format(software_id),
+                     stream=True)
+    z = zipfile.ZipFile(io.BytesIO(r.content))
+    z.extractall(path + "/" + model)
+    print("Downloaded firmware for " + model + " motherboard")
     return
+

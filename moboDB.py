@@ -1,53 +1,51 @@
 import mobo_drivers
-import sqlite3
-
-connection = sqlite3.connect("MotherboardFirmware.db")
+import dataset
+db = dataset.connect('sqlite:///Firmware.db')
 def createDB():
-    connection = sqlite3.connect("MotherboardFirmware.db")
+     #db = dataset.connect('sqlite:///Firmware.db')
+    db['MOBOS'].drop()
+    db.create_table('MOBOS')
+def deleteDB():
     
-    sql_command = """
-        CREATE TABLE motherboards ( 
-        softwareID INT,
-        model VARCHAR(30));"""
-    cursor = connection.cursor()
-    cursor.execute("DROP TABLE IF EXISTS motherboards")
-    cursor.execute(sql_command)
-    print("Database Created")
-    connection.close()
     return
-
 def getDB():
+    for mobo in db['MOBOS']:
+        print(mobo['model'])
+        print(mobo['SoftwareID'])
+    print(db.tables)
+    return
+
+def addMOBOS(motherboardList):
+    table = db.get_table('MOBOS')
+    for dataset in motherboardList:
+        for item in dataset:
+            if isinstance(item,str):
+                ID = dataset[len(dataset)-1]
+                table.insert(dict(model=item, SoftwareID=ID))
 
     return
 
-def addMOBO(model,ID):
-    sql = "INSERT INTO motherboards(softwareID, \
-    model) \
-    VALUES ('%d', '%s')" % \
-    (ID, model)
-
-    connection = sqlite3.connect("MotherboardFirmware.db")
-    cursor = connection.cursor()
+# Method that returns data to you based on what you put in. For example if give a motherboard string it will return any software ID associated with it in the database.
+# If you give it an int software ID it will return all MOBOS associated with it in the db
+def getMOBO(model,*args):
     try:
-        # Execute the SQL command
-        cursor.execute(sql)
-        # Commit your changes in the database
-        connection.commit()
-        print("Added mobo")
+        table = db.load_table('MOBOS')
     except:
-        # Rollback in case there is any error
-        connection.rollback()
-        print("failed to add mobo")
-
-    # disconnect from server
-    connection.close()
-    return
-
-
-def getMOBO():
-    return
+        print("Table not found try creating database first")
+    
+    result = (table.find_one(model=model)['SoftwareID'])
+    # for arg in args:
+    #     if isinstance(arg,str):
+    #         result.append(table.find(model=arg)['SoftwareID'])
+    #     if isinstance(arg,int):
+    #         result.append(table.find(SoftwareID=arg)['model'])
+        
+    print(result)
+    return result
 
 
 if __name__ == "__main__":
-    createDB()
-    addMOBO("test",5)
+    getMOBO("X9SCA")
+    getDB()
+    
+    

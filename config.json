@@ -1,0 +1,7 @@
+{
+    "SETTINGS": {
+      "EXCLUDED_FILES": [".pdf", ".zip"],
+      "MAX_RETRIES": 3,
+      "BIOS_URL": "https://www.supermicro.com/support/resources/bios_ipmi.php?type=BIOS"
+    }
+  }
