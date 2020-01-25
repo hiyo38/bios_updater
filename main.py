@@ -1,15 +1,17 @@
 #!/usr/bin/python3
-import mobo_drivers as Drivers
-import moboDB as Database
+import mobo_drivers
+import moboDB
+# import moboDB
+
 if __name__ == "__main__":
     name = "X9SCL-F"
     # Scrapes web page for names and software IDs
-    ModelList = Drivers.get_motherboard_list()
-    # Creates data base
-    Database.createDB()
-    # Takes list created by get_motherboard_list and generates rows in the DB 
-    Database.addMOBOS(ModelList)
+    modelList = mobo_drivers.get_motherboard_list()
+    # # Creates data base
+    moboDB.createDB()
+    # # Takes list created by get_motherboard_list and generates rows in the DB
+    moboDB.addMOBOS(modelList)
     # Query DB with model name, returns ID
-    softwareID = Database.getMOBO(name)
+    softwareID = str(moboDB.getMOBO(name))
     # Pass in name and software ID to download the firmware
-    Drivers.download_firmware(name,softwareID)
+    mobo_drivers.download_firmware(name, softwareID)

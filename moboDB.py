@@ -1,52 +1,53 @@
 #!/usr/bin/python3
 import mobo_drivers
 import dataset
-db = dataset.connect('sqlite:///Firmware.db')
-def createDB():
-     #db = dataset.connect('sqlite:///Firmware.db')
-    db['MOBOS'].drop()
-    db.create_table('MOBOS')
-def deleteDB():
-    
-    return
+import shelve
+
+
+def createDB():  # This function technically isn't needed, as shelve creates a database as necessary.
+    with shelve.open(".firmware") as _:
+        pass
+
+
 def getDB():
-    for mobo in db['MOBOS']:
-        print(mobo['model'])
-        print(mobo['SoftwareID'])
-    print(db.tables)
-    return
+    with shelve.open(".firmware") as db:
+        for model in db:
+            print("{}: {}".format(model.ljust(20), db[model]))
+    return None
+
 
 def addMOBOS(motherboardList):
-    table = db.get_table('MOBOS')
-    for dataset in motherboardList:
-        ID = dataset[len(dataset)-1]
-        for item in dataset:
-            if isinstance(item,str):
-               table.insert(dict(model=item,software=ID))
-    return
+    with shelve.open(".firmware") as db:
+        for modelList in motherboardList:
+            ID = modelList[-1]
+            for model in modelList:
+                if isinstance(
+                    model, str
+                ):  # making sure that the Software ID isn't pulled
+                    db[model] = ID
+
 
 # Method that returns data to you based on what you put in. For example if give a motherboard string it will return any software ID associated with it in the database.
 # If you give it an int software ID it will return all MOBOS associated with it in the db
-def getMOBO(model,*args):
-    try:
-        table = db.load_table('MOBOS')
-    except:
-        print("Table not found try creating database first")
-    
-    result = (table.find_one(model=model)['software'])
-    # for arg in args:
-    #     if isinstance(arg,str):
-    #         result.append(table.find(model=arg)['SoftwareID'])
-    #     if isinstance(arg,int):
-    #         result.append(table.find(SoftwareID=arg)['model'])
-        
-    print(result)
-    return result
+def getMOBO(*args):
+    retls = []
+    with shelve.open(".firmware") as db:
+        for model in args:
+            print("Searching for {}...".format(model))
+            if model in db:
+                print("{}: {}".format(model.ljust(20), db[model]))
+                retls.append(db[model])
+            else:
+                print("Motherboard {} not found in database".format(model))
+                return None
+
+    if len(args) <= 1:  # Returns list of software ID's if more than one arg is given
+        return retls[0]
+    else:
+        return retls
 
 
 if __name__ == "__main__":
-    
-    getMOBO("X11SSL-F")
+
+    getMOBO("370DLR")
     getDB()
-    
-    
