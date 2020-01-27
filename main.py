@@ -20,6 +20,6 @@ if __name__ == "__main__":
     # Takes list created by get_motherboard_list and generates rows in the DB
     moboDB.addMOBOS(modelList)
     # Query DB with model name, returns ID
-    softwareID = moboDB.getMOBO(names)
+    softwareID = moboDB.getMOBO(*names)
     # Pass in name and software ID to download the firmware
     mobo_drivers.download_firmware(names, softwareID)
