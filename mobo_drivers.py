@@ -1,12 +1,13 @@
 #!/usr/bin/python3
+
 import io
+import os
 import re
 import shutil
 import zipfile
-import os
-import requests
 
 import bs4
+import requests
 
 from config import get_config
 
@@ -27,15 +28,18 @@ def get_motherboard_list() -> list:
             continue
         break
     # parse page
-    bios = bs4.BeautifulSoup(res.text, 'lxml')
-    table_head = bios.find('table')
-    tr = table_head.find_all('tr')
+    bios = bs4.BeautifulSoup(res.text, "lxml")
+    table_head = bios.find("table")
+    tr = table_head.find_all("tr")
     models = []
     for text in tr:
         model_info = []
-        links = text.find_all('a')
+        links = text.find_all("a")
         for mobo in links:
-            result = re.match(r"/about/policies/disclaimer.cfm\?SoftwareItemID=(\d*)", mobo.get('href'))
+            result = re.match(
+                r"/about/policies/disclaimer.cfm\?SoftwareItemID=(\d*)",
+                mobo.get("href"),
+            )
             if result:
                 model_info.append(int(result.group(1)))
             for name in mobo:
@@ -68,6 +72,11 @@ def download_firmware(model, software_id) -> None:
     """
     # Create the path for the dir
     path = os.getcwd() + "/BIOS"
+    URL = (
+        "https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID="
+        + software_id
+    )
+
     try:
         shutil.rmtree("BIOS")
         print("Deleting old BIOS folder")
@@ -78,11 +87,9 @@ def download_firmware(model, software_id) -> None:
         print("Creating BIOS dir")
     except OSError:
         print("Failed to create BIOS folder")
-    
-    r = requests.get("https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID={}".format(software_id),
-                     stream=True)
+
+    r = requests.get(URL, stream=True)
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall(path + "/" + model)
     print("Downloaded firmware for " + model + " motherboard")
     return
-
