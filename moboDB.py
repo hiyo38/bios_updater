@@ -28,7 +28,7 @@ def addMOBOS(motherboardList):
 
 # Method that returns data to you based on what you put in. For example if give a motherboard string it will return any software ID associated with it in the database.
 # If you give it an int software ID it will return all MOBOS associated with it in the db
-def getMOBO(*args):
+def getMOBO(args):
     retls = []
     with shelve.open(".firmware") as db:
         for model in args:
@@ -38,13 +38,12 @@ def getMOBO(*args):
                 retls.append(db[model])
             else:
                 print("Motherboard {} not found in database".format(model))
-                return None
 
     if len(args) <= 1:  # Returns list of software ID's if more than one arg is given
-        return retls[0]
+       return retls[0]
     else:
-        return retls
-
+       print(retls)
+       return retls
 
 if __name__ == "__main__":
 

@@ -66,30 +66,37 @@ def validate(item: str) -> bool:
 def download_firmware(model, software_id) -> None:
     """
     Downloads model firmware to target directory
-    @param model:
-    @param software_id:
+    @param model: list
+    @param software_id: list,int
     @return:
     """
     # Create the path for the dir
     path = os.getcwd() + "/BIOS"
     URL = (
         "https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID="
-        + software_id
+        
     )
 
     try:
         shutil.rmtree("BIOS")
-        print("Deleting old BIOS folder")
+        print("Deleting old BIOS dir")
     except OSError:
-        print("No old BIOS folder Found")
+        print("No old BIOS dir Found")
     try:
         os.mkdir(path)
         print("Creating BIOS dir")
     except OSError:
-        print("Failed to create BIOS folder")
+        print("Failed to create BIOS dir")
+    if isinstance(software_id,list):
+       for i in range(len(software_id)):	
+           r = requests.get(URL+str(software_id[i]), stream=True)
+           z = zipfile.ZipFile(io.BytesIO(r.content))
+           z.extractall(path + "/" + model[i])
+           print("Downloaded firmware for " + model[i]+ " motherboard")
+    else:
+         r = requests.get(URL+str(software_id), stream=True)
+         z = zipfile.ZipFile(io.BytesIO(r.content))
+         z.extractall(path + "/" + model[0])
+         print("Downloaded firmware for " + model[0]+ " motherboard")
 
-    r = requests.get(URL, stream=True)
-    z = zipfile.ZipFile(io.BytesIO(r.content))
-    z.extractall(path + "/" + model)
-    print("Downloaded firmware for " + model + " motherboard")
     return
