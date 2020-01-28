@@ -15,4 +15,9 @@ The mobo_drivers.py file is basically done. Meanwhile the moboDB.py file is new 
 
 TODO:
 - Switch to shelve instead of sqlite DONE
-- Have main take in args to change the name of the model that needs to be downloaded
+
+- Main now takes args though its kinda hacky at the moment, its usage is like so:
+```
+$./main X9SCL-F X8SIL-F [....]
+```
+You can add all the motherboards you want to download on the command line and it will attpempt to find them in the database and then download them in sequential order.
