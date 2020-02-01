@@ -9,10 +9,6 @@ These Python modules are needed:
 ```
 $ pip3 install bs4 lxml requests
 ```
-
-
-The mobo_drivers.py file is basically done. Meanwhile the moboDB.py file is new so I have not worked on it much but it does what it needs to in order for the whole thing to work. 
-
 TODO:
 - Switch to shelve instead of sqlite DONE
 
@@ -20,4 +16,8 @@ TODO:
 ```
 $./main X9SCL-F X8SIL-F [....]
 ```
-You can add all the motherboards you want to download on the command line and it will attpempt to find them in the database and then download them in sequential order.
+You can add all the motherboards you want to download on the command line, it will then attempt to find them in the database and download them in sequential order.
+
+- Main needs to have a default state when given no args, such as reading from a textfile or a hardcoded set of moterboards that it will download.
+- Main needs a name change to maybe updater.py
+- Have the whole program use SUM to automate updating bios and retriving the latest versions all dynamically.
