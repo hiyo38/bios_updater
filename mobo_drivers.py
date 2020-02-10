@@ -77,17 +77,11 @@ def download_firmware(model, software_id) -> None:
         "https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID="
         
     )
-
     try:
-        shutil.rmtree("BIOS")
-        print("Deleting old BIOS dir")
-    except OSError:
-        print("No old BIOS dir Found")
-    try:
-        os.mkdir(path)
-        print("Creating BIOS dir")
-    except OSError:
-        print("Failed to create BIOS dir")
+       os.mkdir(path)
+    except:
+       pass
+    
     if isinstance(software_id,list):
        for i in range(len(software_id)):
            filePath = path+"/"+model[i]	
@@ -100,7 +94,9 @@ def download_firmware(model, software_id) -> None:
          r = requests.get(URL+str(software_id), stream=True)
          z = zipfile.ZipFile(io.BytesIO(r.content))
          z.extractall(path)
+         get_roms(model[0],path)
          print("Downloaded firmware for " + model[0]+ " motherboard")
+    
     return
 
 
