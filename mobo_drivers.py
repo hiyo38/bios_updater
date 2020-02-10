@@ -99,17 +99,23 @@ def download_firmware(model, software_id) -> None:
     else:
          r = requests.get(URL+str(software_id), stream=True)
          z = zipfile.ZipFile(io.BytesIO(r.content))
-         z.extractall(path + "/" + model[0])
+         z.extractall(path)
          print("Downloaded firmware for " + model[0]+ " motherboard")
     return
 
 
 def get_roms(name,path) -> None:
     # Walk through BIOS folder for files
+    try:
+       os.mkdir("ROMS")
+    except:
+       pass
     for root,dirs,files in os.walk(path):
         for f in files:
             try:
-               if magic.from_file(os.path.join(path,f)) != 'Intel serial flash for PCH ROM':
+               if magic.from_file(os.path.join(path,f)) == 'Intel serial flash for PCH ROM':
+                  os.rename(os.path.join(path,f),"ROMS/"+name)
+               else:
                   os.remove(os.path.join(path,f))
             except OSError:
                   print("Could not delete: " + f)
@@ -119,9 +125,10 @@ def get_roms(name,path) -> None:
                 for f in files:
                  try:
                     if magic.from_file(os.path.join(path+"/"+d,f))=='Intel serial flash for PCH ROM':
-                       os.rename(os.path.join(path+"/"+d,f),path+"/"+name)
+                       os.rename(os.path.join(path+"/"+d,f),"ROMS/"+name)
                  except:
                     print("Could not remove " + os.path.join(path+"/"+d,f))
             shutil.rmtree(os.path.join(path,d))
+        shutil.rmtree("BIOS")
     return
 
