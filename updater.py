@@ -3,6 +3,7 @@
 import mobo_drivers
 import moboDB
 import argparse
+import os
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Download given firmware from model name')
@@ -15,7 +16,7 @@ if __name__ == "__main__":
        for name in i:
             names.append(name)	
     if  len(names) == 0:
-       f = open("motherboards.txt","r")
+       f = open(os.path.dirname(__file__)+ '/motherboards.txt',"r")
        motherboards= f.readlines()
        for line in motherboards:
            names.append(line.strip())
