@@ -101,11 +101,12 @@ def download_firmware(model, software_id) -> None:
 
 
 def get_roms(name,path) -> None:
-    # Walk through BIOS folder for files
+    #Create ROMS folder to store roms, if it already exists it will just ignore it. 
     try:
        os.mkdir("ROMS")
     except:
        pass
+   # Walk through the the given path to find PCH ROM files, if found move to ROMS folder
     for root,dirs,files in os.walk(path):
         for f in files:
             try:
@@ -115,7 +116,7 @@ def get_roms(name,path) -> None:
                   os.remove(os.path.join(path,f))
             except OSError:
                   print("Could not delete: " + f)
-        # Walk through dirs in BIOS folder
+        # Find dirs in the path and walk through those
         for d in dirs:
             for root,dir,files in os.walk(os.path.join(path,d)):
                 for f in files:
@@ -124,7 +125,9 @@ def get_roms(name,path) -> None:
                        os.rename(os.path.join(path+"/"+d,f),"ROMS/"+name)
                  except:
                     print("Could not remove " + os.path.join(path+"/"+d,f))
+            #Delete the folder after the its been moved
             shutil.rmtree(os.path.join(path,d))
+        #Delete the now temp BIOS folder    
         shutil.rmtree("BIOS")
     return
 
