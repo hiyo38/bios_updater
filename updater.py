@@ -14,7 +14,9 @@ if __name__ == "__main__":
     names=[]
     for i in temp:
        for name in i:
-            names.append(name)	
+            names.append(name)
+    #if names[0] == 'auto':
+       	
     if  len(names) == 0:
        f = open(os.path.dirname(__file__)+ '/motherboards.txt',"r")
        motherboards= f.readlines()

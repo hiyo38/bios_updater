@@ -119,15 +119,29 @@ def get_roms(name,path) -> None:
         # Find dirs in the path and walk through those
         for d in dirs:
             for root,dir,files in os.walk(os.path.join(path,d)):
-                for f in files:
-                 try:
-                    if magic.from_file(os.path.join(path+"/"+d,f))=='Intel serial flash for PCH ROM':
-                       os.rename(os.path.join(path+"/"+d,f),"ROMS/"+name)
-                 except:
-                    print("Could not remove " + os.path.join(path+"/"+d,f))
+                if 'DOS' or 'UEFI' in dir:
+                   try:
+                      shutil.rmtree(path+'/'+d+'/'+'UEFI') 
+                   except:
+                      pass
+                   for root,dir,files in os.walk(os.path.join(path,d+"/DOS")):
+                       for f in files:
+                         try:
+                            if magic.from_file(os.path.join(path+"/"+d+"/DOS",f))=='Intel serial flash for PCH ROM':
+                               os.rename(os.path.join(path+"/"+d+"/"+'DOS',f),"ROMS/"+name)
+                         except:
+                            print("Could not remove " + os.path.join(path+"/"+d,f))
+                else:
+                    for f in files:
+                     try:
+                       if magic.from_file(os.path.join(path+"/"+d,f))=='Intel serial flash for PCH ROM':
+                          os.rename(os.path.join(path+"/"+d,f),"ROMS/"+name)
+                     except:
+                       print("Could not remove " + os.path.join(path+"/"+d,f))
+
             #Delete the folder after the its been moved
             shutil.rmtree(os.path.join(path,d))
         #Delete the now temp BIOS folder    
-        shutil.rmtree("BIOS")
+        #shutil.rmtree("BIOS")
     return
 
