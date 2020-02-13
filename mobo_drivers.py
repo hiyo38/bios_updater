@@ -5,6 +5,9 @@ import os
 import re
 import shutil
 import zipfile
+import subprocess
+
+import moboDB
 
 import bs4
 import requests
@@ -95,9 +98,10 @@ def download_firmware(model, software_id) -> None:
          z = zipfile.ZipFile(io.BytesIO(r.content))
          z.extractall(path)
          get_roms(model[0],path)
+         path = os.path.join(os.getcwd()+"/ROMS",model[0])
          print("Downloaded firmware for " + model[0]+ " motherboard")
     
-    return
+    return path
 
 
 def get_roms(name,path) -> None:
@@ -143,5 +147,21 @@ def get_roms(name,path) -> None:
             shutil.rmtree(os.path.join(path,d))
         #Delete the now temp BIOS folder    
         shutil.rmtree("BIOS")
+    return 
+def auto_download():
+    os.system('echo -e "Product Name: $(dmidecode -s baseboard-product-name)\nVersion: $(dmidecode -s bios-version)\nRelease Date: $(dmidecode -s bios-release-date)"')
+    p = subprocess.Popen(["dmidecode","-s","baseboard-product-name"], stdout=subprocess.PIPE,shell=True)
+    output, err = p.communicate()
+    print(output)
+    result = re.match(
+               r"Product Name:(.*)\/(.*)",
+               output,
+            )
+    if result:
+       name =  result.group(1)
+    path = download_firmware(name,mobodb.get_mobo(name))
+    subprocess.Popen(["/pandora/utils/update_bios/bios_sum","-c","UpdateBios","--file", path],stdout=subprocess.PIP,shell=True)
+     
+    
+    print('success')
     return
-
