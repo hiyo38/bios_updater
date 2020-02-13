@@ -142,6 +142,6 @@ def get_roms(name,path) -> None:
             #Delete the folder after the its been moved
             shutil.rmtree(os.path.join(path,d))
         #Delete the now temp BIOS folder    
-        #shutil.rmtree("BIOS")
+        shutil.rmtree("BIOS")
     return
 
