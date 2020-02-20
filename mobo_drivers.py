@@ -100,11 +100,24 @@ def download_firmware(model, software_id) -> None:
          get_roms(model[0],path)
          path = os.path.join(os.getcwd()+"/ROMS",model[0])
          print("Downloaded firmware for " + model[0]+ " motherboard")
-    
+    shutil.rmtree(os.getcwd()+"/BIOS")
     return path
 
-
 def get_roms(name,path) -> None:
+    try:
+       os.mkdir("ROMS")
+    except:
+       pass
+    for root,dirs,files in os.walk(path):
+        for f in files:
+            if magic.from_file(os.path.join(root,f)) == 'Intel serial flash for PCH ROM':
+               os.rename(os.path.join(root,f),"ROMS/"+name)
+               print("Found ROM " +f)
+               return
+        for d in dirs:
+            test(name,os.path.join(root,d))
+    return
+def bad_get_roms(name,path) -> None:
     #Create ROMS folder to store roms, if it already exists it will just ignore it. 
     try:
        os.mkdir("ROMS")
@@ -122,10 +135,10 @@ def get_roms(name,path) -> None:
                   print("Could not delete: " + f)
         # Find dirs in the path and walk through those
         for d in dirs:
-            for root,dir,files in os.walk(os.path.join(path,d)):
+            for root,dir,files in os.walk(os.path.join(root,d)):
                 if 'DOS' or 'UEFI' in dir:
                    try:
-                      shutil.rmtree(path+'/'+d+'/'+'UEFI') 
+                      shutil.rmtree(root+'/'+d+'/'+'UEFI') 
                    except:
                       pass
                    for root,dir,files in os.walk(os.path.join(path,d+"/DOS")):
@@ -138,6 +151,7 @@ def get_roms(name,path) -> None:
                 else:
                     for f in files:
                      try:
+                       print("WHEEEEEEE")
                        if magic.from_file(os.path.join(path+"/"+d,f))=='Intel serial flash for PCH ROM':
                           os.rename(os.path.join(path+"/"+d,f),"ROMS/"+name)
                      except:
