@@ -117,51 +117,6 @@ def get_roms(name,path) -> None:
         for d in dirs:
             get_roms(name,os.path.join(root,d))
     return
-def bad_get_roms(name,path) -> None:
-    #Create ROMS folder to store roms, if it already exists it will just ignore it. 
-    try:
-       os.mkdir("ROMS")
-    except:
-       pass
-   # Walk through the the given path to find PCH ROM files, if found move to ROMS folder
-    for root,dirs,files in os.walk(path):
-        for f in files:
-            try:
-               if magic.from_file(os.path.join(path,f)) == 'Intel serial flash for PCH ROM':
-                  os.rename(os.path.join(path,f),"ROMS/"+name)
-               else:
-                  os.remove(os.path.join(path,f))
-            except OSError:
-                  print("Could not delete: " + f)
-        # Find dirs in the path and walk through those
-        for d in dirs:
-            for root,dir,files in os.walk(os.path.join(root,d)):
-                if 'DOS' or 'UEFI' in dir:
-                   try:
-                      shutil.rmtree(root+'/'+d+'/'+'UEFI') 
-                   except:
-                      pass
-                   for root,dir,files in os.walk(os.path.join(path,d+"/DOS")):
-                       for f in files:
-                         try:
-                            if magic.from_file(os.path.join(path+"/"+d+"/DOS",f))=='Intel serial flash for PCH ROM':
-                               os.rename(os.path.join(path+"/"+d+"/"+'DOS',f),"ROMS/"+name)
-                         except:
-                            print("Could not remove " + os.path.join(path+"/"+d,f))
-                else:
-                    for f in files:
-                     try:
-                       print("WHEEEEEEE")
-                       if magic.from_file(os.path.join(path+"/"+d,f))=='Intel serial flash for PCH ROM':
-                          os.rename(os.path.join(path+"/"+d,f),"ROMS/"+name)
-                     except:
-                       print("Could not remove " + os.path.join(path+"/"+d,f))
-
-            #Delete the folder after the its been moved
-            shutil.rmtree(os.path.join(path,d))
-        #Delete the now temp BIOS folder    
-        shutil.rmtree("BIOS")
-    return 
 def auto_download():
     #os.system('echo -e "Product Name: $(dmidecode -s baseboard-product-name)\nVersion: $(dmidecode -s bios-version)\nRelease Date: $(dmidecode -s bios-release-date)"')
     #p = subprocess.Popen(["dmidecode","-s","baseboard-product-name","|","grep","-v","\#"])
