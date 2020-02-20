@@ -115,7 +115,7 @@ def get_roms(name,path) -> None:
                print("Found ROM " +f)
                return
         for d in dirs:
-            test(name,os.path.join(root,d))
+            get_roms(name,os.path.join(root,d))
     return
 def bad_get_roms(name,path) -> None:
     #Create ROMS folder to store roms, if it already exists it will just ignore it. 
