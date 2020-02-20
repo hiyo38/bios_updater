@@ -118,21 +118,10 @@ def get_roms(name,path) -> None:
             get_roms(name,os.path.join(root,d))
     return
 def auto_download():
-    #os.system('echo -e "Product Name: $(dmidecode -s baseboard-product-name)\nVersion: $(dmidecode -s bios-version)\nRelease Date: $(dmidecode -s bios-release-date)"')
+    os.system('echo -e "Product Name: $(dmidecode -s baseboard-product-name)\nVersion: $(dmidecode -s bios-version)\nRelease Date: $(dmidecode -s bios-release-date)"')
     #p = subprocess.Popen(["dmidecode","-s","baseboard-product-name","|","grep","-v","\#"])
     p = os.popen('dmidecode -s baseboard-product-name | grep -v \#').read()
-    #output, err = p.communicate()
-    print("OUTPUT: " + p)
-
-
-    #result = re.match(
-    #           r"(.*)",
-    #           p,
-    #        )
-
-#    print("RESULT: " + result)
-    #if result:
-    #   name =  result.group(1)
+    #print("OUTPUT: " + p)
     print("NAME: " + p)
 
     name = p.strip()
