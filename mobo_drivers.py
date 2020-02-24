@@ -118,14 +118,18 @@ def get_roms(name,path) -> None:
             get_roms(name,os.path.join(root,d))
     return
 def auto_download():
-    os.system('echo -e "Product Name: $(dmidecode -s baseboard-product-name)\nVersion: $(dmidecode -s bios-version)\nRelease Date: $(dmidecode -s bios-release-date)"')
+    os.system('echo "Product Name: $(dmidecode -s baseboard-product-name)\nVersion: $(dmidecode -s bios-version)\nRelease Date: $(dmidecode -s bios-release-date)"')
     #p = subprocess.Popen(["dmidecode","-s","baseboard-product-name","|","grep","-v","\#"])
     p = os.popen('dmidecode -s baseboard-product-name | grep -v \#').read()
     #print("OUTPUT: " + p)
     print("NAME: " + p)
 
     name = p.strip()
-    softwareID = moboDB.getMOBO(name)
+    if '/' in name:
+       names = name.split('/')
+       softwareID = moboDB.getMOBO(name[0])
+    else
+       softwareID = moboDB.getMOBO(name)
     path = download_firmware(name,softwareID)
     print(path)
     subprocess.run(["/pandora/utils/update_bios/bios_sum","-c","UpdateBios","--file", path])
