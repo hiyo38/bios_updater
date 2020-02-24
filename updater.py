@@ -36,4 +36,4 @@ if __name__ == "__main__":
         # Query DB with model name, returns ID
         softwareID = moboDB.getMOBO(*names)
         # Pass in name and software ID to download the firmware
-        print(mobo_drivers.download_firmware(names, softwareID))
+        mobo_drivers.download_firmware(names, softwareID)
