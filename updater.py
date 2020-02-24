@@ -34,7 +34,7 @@ if __name__ == "__main__":
               for line in motherboards:
                   names.append(line.strip())
         
-        # Query DB with model name, returns ID
-        softwareID = moboDB.getMOBO(*names)
-        # Pass in name and software ID to download the firmware
-        mobo_drivers.download_firmware(names, softwareID)
+       # Query DB with model name, returns ID
+       softwareID = moboDB.getMOBO(*names)
+       # Pass in name and software ID to download the firmware
+       mobo_drivers.download_firmware(names, softwareID)
