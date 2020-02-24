@@ -127,7 +127,7 @@ def auto_download():
     name = p.strip()
     if '/' in name:
        names = name.split('/')
-       softwareID = moboDB.getMOBO(name[0])
+       softwareID = moboDB.getMOBO(names[0])
     else:
        softwareID = moboDB.getMOBO(name)
     path = download_firmware(name,softwareID)
