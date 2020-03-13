@@ -1,6 +1,5 @@
 ## BIOS Updater
 
-This project is made in an effort to integrate the bios updating process into the DCO work flow and make it so that all teams have access to up to date firmware.
 This code parses supermicros BIOS support page and retrives all the motherboard model names and associates them with thier respective software IDs which are used to make http requests to supermicros server. 
 
 This project uses python3.6
@@ -16,6 +15,8 @@ $./updater.py X9SCL-F X8SIL-F [....]
 You can add all the motherboards you want to download on the command line, it will then attempt to find them in the database and download them in sequential order.
 updater.py now has a default state when given no args. It looks for a file name "motherboards.txt" and uses the models found in it to download a set list of roms.
 
-TODO:
-- Switch to shelve instead of sqlite DONE
-- Have the whole program use SUM to automate updating bios and retriving the latest versions all dynamically.
+The program is now able to automate the whole installation process by typing
+```
+$ ./updater.py auto
+```
+It will parse the server hardware information for the motherboard and then make a request to the data base with the model name and attempt to download the rom and install. 
