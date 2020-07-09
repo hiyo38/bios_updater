@@ -7,13 +7,13 @@ import shutil
 import zipfile
 import subprocess
 
-import moboDB
+from MotherboardData import moboDB
 
 import bs4
 import requests
 import magic
 
-from config import get_config
+from Config import config
 
 
 def get_motherboard_list() -> list:
@@ -25,8 +25,8 @@ def get_motherboard_list() -> list:
     """
     # request page
     tries = 0
-    while tries < get_config("SETTINGS", "MAX_RETRIES"):
-        res = requests.get(get_config("SETTINGS", "BIOS_URL"))
+    while tries < config.get_config("SETTINGS", "MAX_RETRIES"):
+        res = requests.get(config.get_config("SETTINGS", "BIOS_URL"))
         if res.status_code != 200:
             tries += 1
             continue
@@ -59,7 +59,7 @@ def validate(item: str) -> bool:
     @param item:
     @return:
     """
-    for exclusion in get_config("SETTINGS", "EXCLUDED_FILES"):
+    for exclusion in config.get_config("SETTINGS", "EXCLUDED_FILES"):
         if exclusion in item.lower():
             return False
     return True
@@ -78,63 +78,65 @@ def download_firmware(model, software_id) -> None:
     path = os.getcwd() + "/BIOS"
     URL = (
         "https://www.supermicro.com/support/resources/getfile.php?SoftwareItemID="
-        
+
     )
     try:
-       os.mkdir(path)
+        os.mkdir(path)
     except:
-       pass
-    
-    if isinstance(software_id,list):
-       for i in range(len(software_id)):
-           filePath = path+"/"+model[i]	
-           r = requests.get(URL+str(software_id[i]), stream=True)
-           z = zipfile.ZipFile(io.BytesIO(r.content))
-           z.extractall(path)
-           get_roms(model[i],path)			
-           print("Downloaded firmware for " + model[i]+ " motherboard")
+        pass
+
+    if isinstance(software_id, list):
+        for i in range(len(software_id)):
+            filePath = path + "/" + model[i]
+            r = requests.get(URL + str(software_id[i]), stream=True)
+            z = zipfile.ZipFile(io.BytesIO(r.content))
+            z.extractall(path)
+            get_roms(model[i], path)
+            print("Downloaded firmware for " + model[i] + " motherboard")
     else:
-         r = requests.get(URL+str(software_id), stream=True)
-         z = zipfile.ZipFile(io.BytesIO(r.content))
-         z.extractall(path)
-         get_roms(model[0],path)
-         path = os.path.join(os.getcwd()+"/ROMS",model[0])
-         print("Downloaded firmware for " + model[0]+ " motherboard")
-    shutil.rmtree(os.getcwd()+"/BIOS")
+        r = requests.get(URL + str(software_id), stream=True)
+        z = zipfile.ZipFile(io.BytesIO(r.content))
+        z.extractall(path)
+        get_roms(model[0], path)
+        path = os.path.join(os.getcwd() + "/ROMS", model[0])
+        print("Downloaded firmware for " + model[0] + " motherboard")
+    shutil.rmtree(os.getcwd() + "/BIOS")
     return path
 
-def get_roms(name,path) -> None:
+
+def get_roms(name, path) -> None:
     try:
-       os.mkdir("ROMS")
+        os.mkdir("ROMS")
     except:
-       pass
-    for root,dirs,files in os.walk(path):
+        pass
+    for root, dirs, files in os.walk(path):
         for f in files:
-            if magic.from_file(os.path.join(root,f)) == 'Intel serial flash for PCH ROM':
-               os.rename(os.path.join(root,f),"ROMS/"+name)
-               print("Found ROM " +f)
-               return
+            if magic.from_file(os.path.join(root, f)) == 'Intel serial flash for PCH ROM':
+                os.rename(os.path.join(root, f), "ROMS/" + name)
+                print("Found ROM " + f)
+                return
         for d in dirs:
-            get_roms(name,os.path.join(root,d))
+            get_roms(name, os.path.join(root, d))
     return
+
+
 def auto_download():
     os.system('echo "Product Name: $(dmidecode -s baseboard-product-name)\nVersion: $(dmidecode -s bios-version)\nRelease Date: $(dmidecode -s bios-release-date)"')
-    #p = subprocess.Popen(["dmidecode","-s","baseboard-product-name","|","grep","-v","\#"])
+    # p = subprocess.Popen(["dmidecode","-s","baseboard-product-name","|","grep","-v","\#"])
     p = os.popen('dmidecode -s baseboard-product-name | grep -v \#').read()
     #print("OUTPUT: " + p)
     print("NAME: " + p)
 
     name = p.strip()
     if '/' in name:
-       names = name.split('/')
-       softwareID = moboDB.getMOBO(names[0])
+        names = name.split('/')
+        softwareID = moboDB.getMOBO(names[0])
     else:
-       softwareID = moboDB.getMOBO(name)
-    path = download_firmware(name,softwareID)
+        softwareID = moboDB.getMOBO(name)
+    path = download_firmware(name, softwareID)
     print(path)
-    subprocess.run(["/pandora/utils/update_bios/bios_sum","-c","UpdateBios","--file", path])
-
+    subprocess.run(["/pandora/utils/update_bios/bios_sum",
+                    "-c", "UpdateBios", "--file", path])
 
     print('success')
     return
-

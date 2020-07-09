@@ -1,0 +1,4 @@
+bs4
+lxml
+requests
+python-magic==0.4.14
